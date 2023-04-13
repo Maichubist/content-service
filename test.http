@@ -1,0 +1,26 @@
+#Get JWT
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{"login": "de", "password": "AH31LP#"}
+
+###
+#Get JWT
+POST http://localhost:5000/registration
+Content-Type: application/json
+
+{"name": "api","phone_number": "0661112233","login": "de", "password": "AH31LP#"}
+###
+POST http://localhost:5000/registration
+Content-Type: application/json
+
+
+{"name": "api","phone_number": "0661234567","login": "eew", "password": "12345"}
+###
+#Get JWT
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{"login": "eew", "password": "12345"}
+
+###
