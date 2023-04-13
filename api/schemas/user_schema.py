@@ -1,21 +1,21 @@
-from marshmallow_sqlalchemy import SQLAlchemySchema
-from marshmallow import fields, post_load
+from flask_marshmallow import Marshmallow
 
 from werkzeug.security import generate_password_hash
 from db.user_db import UserDBModel
+from db.db_config import db
 
+ma = Marshmallow()
 #
-class UserSchema(SQLAlchemySchema):
+class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = UserDBModel
+        sqla_session = db.session
         load_instance = True
 
-    name = fields.String(required=True)
-    phone_number = fields.String(required=True)
-    login = fields.String(required=True)
-    password = fields.String(load_only=True, required=True)
+    name = ma.String(required=True)      
+    phone_number = ma.String(required=True)      
+    login = ma.String(required=True)        
+    password = ma.String(load_only=True, required=True)      
 
-    @post_load
-    def make_user(self, data, **kwargs):
-        data.password = generate_password_hash(data.password)
-        return data
+    def load_password(self, value):
+        return generate_password_hash(value)

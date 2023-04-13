@@ -1,15 +1,17 @@
-from marshmallow_sqlalchemy import SQLAlchemySchema
-from marshmallow import fields
+from flask_marshmallow import Marshmallow
 
 from db.post_db import PostDBModel
+from db.db_config import db
 
+ma = Marshmallow()
 
-class PostSchema(SQLAlchemySchema):
+class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PostDBModel
         load_instance = True
+        sqla_session = db.session
 
-    user_id = fields.Integer(required=True)
-    title = fields.String(required=True)
-    text = fields.String(required=True)
+    user_id = ma.Integer(required=True)
+    title = ma.String(required=True)
+    text = ma.String(required=True)
 

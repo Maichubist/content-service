@@ -17,9 +17,8 @@ from api.auth import required_auth
 class RegistrationResource(Resource):
     def post(self):
         try:
-            data = request.json
             schema = UserSchema()
-            user = schema.load(data, session=db.session)
+            user = schema.load(request.json)
             db.session.add(user)
             db.session.commit()
         except IntegrityError:
