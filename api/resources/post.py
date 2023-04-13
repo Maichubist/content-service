@@ -6,22 +6,66 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 
 from db.post_db import PostDBModel
-from db.db_config import redis_store
+from db.db_config import redis_store, db
+from api.auth import required_auth
+from api.schemas.post_schema import PostSchema
+
 
 class PostResource(Resource):
-    def post(self):
-        user_id = redis_store.get(request.headers.get("Authorization").split()[1])
-        if not user_id:
-            return {"message": "Unauthorized"}, 401
-        data = request.json
 
+    @required_auth
+    def put(self, post_id):
+        try:
+            user_id = redis_store.get(request.headers.get("Authorization"))
+            if not user_id:
+                return {"message": "Unauthorized"}, 401
 
-        db.session.add(PostDBModel(data.title, data.text, data.user_id))
-        db.session.commit()
-        return {'message': 'Post created successfully'}, 201
+            schema = PostSchema(partial=True)
+            post = PostDBModel.query.filter_by(user_id=int(user_id), id=post_id).first()
+            post = schema.load(request.json, instance=post, session=db.session)
+
+            db.session.commit()
+            return {"message": "post updated"}, 200
+        except Exception as e:
+            raise e
+
+    @required_auth
+    def delete(self, post_id):
+        try:
+            user_id = redis_store.get(request.headers.get("Authorization"))
+            if not user_id:
+                return {"message": "Unauthorized"}, 401
+            post = PostDBModel.query.filter_by(user_id=int(user_id), id=post_id).first()
+            if not post:
+                return {"message": "post not found"}, 404
+            db.session.delete(post)
+            db.session.commit()
+            return {"message": "post deleted"}, 200
+        except Exception as e:
+            raise e
 
 
 class PostListResource(Resource):
+
+    @required_auth
+    def post(self):
+        try:
+            user_id = redis_store.get(request.headers.get("Authorization"))
+
+            if not user_id:
+                return {"message": "Unauthorized"}, 401
+            data = request.json
+            data["user_id"] = user_id
+            schema = PostSchema()
+            post = schema.load(data, session=db.session)
+
+            db.session.add(post)
+            db.session.commit()
+            return {'message': 'Post created successfully'}, 201
+        except Exception as a:
+            raise a
+
+
     def get(self):
         data = request.json
         print(data)
